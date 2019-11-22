@@ -131,11 +131,12 @@ class MLP(Model):
 
 
 class GCN(Model):
-    def __init__(self, placeholders, input_dim, **kwargs):
+    def __init__(self, placeholders, input_dim, multi_label=False, **kwargs):
         super(GCN, self).__init__(**kwargs)
 
         self.inputs = placeholders['features']
         self.input_dim = input_dim
+        self.multi_label = multi_label
         # self.input_dim = self.inputs.get_shape().as_list()[1]  # To be supported in future Tensorflow versions
         self.output_dim = placeholders['labels'].get_shape().as_list()[1]
         self.placeholders = placeholders
@@ -155,8 +156,12 @@ class GCN(Model):
 
     def _accuracy(self):
         self.accuracy = masked_accuracy(self.outputs, self.placeholders['labels'],
-                                        self.placeholders['labels_mask'])
-        self.pred = tf.argmax(self.outputs, 1)
+                                        self.placeholders['labels_mask'],
+                                        self.multi_label)
+        if self.multi_label:
+            self.pred = tf.argmax(self.outputs, 1)
+        else:
+            self.pred = tf.where(self.outputs >= 0.5, tf.ones(tf.shape(self.outputs)), tf.zeros(tf.shape(self.outputs)))
         self.labels = tf.argmax(self.placeholders['labels'], 1)
 
     def _build(self):

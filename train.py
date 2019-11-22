@@ -11,11 +11,12 @@ import random
 import os
 import sys
 
-if len(sys.argv) != 2:
+if len(sys.argv) == 1:
 	sys.exit("Use: python train.py <dataset>")
 
-datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr']
+datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr', 'baidu_95']
 dataset = sys.argv[1]
+multi_label = False if not sys.argv[2] else bool(sys.argv[2])
 
 if dataset not in datasets:
 	sys.exit("wrong dataset name")
@@ -27,7 +28,7 @@ np.random.seed(seed)
 tf.set_random_seed(seed)
 
 # Settings
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,2"
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -36,7 +37,7 @@ flags.DEFINE_string('dataset', dataset, 'Dataset string.')
 # 'gcn', 'gcn_cheby', 'dense'
 flags.DEFINE_string('model', 'gcn', 'Model string.')
 flags.DEFINE_float('learning_rate', 0.02, 'Initial learning rate.')
-flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
+flags.DEFINE_integer('epochs', 1, 'Number of epochs to train.')
 flags.DEFINE_integer('hidden1', 200, 'Number of units in hidden layer 1.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0,
@@ -85,7 +86,7 @@ placeholders = {
 
 # Create model
 print(features[2][1])
-model = model_func(placeholders, input_dim=features[2][1], logging=True)
+model = model_func(placeholders, input_dim=features[2][1], multi_label=multi_label, logging=True)
 
 # Initialize session
 session_conf = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
