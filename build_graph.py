@@ -12,12 +12,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import sys
 from scipy.spatial.distance import cosine
 
-if len(sys.argv) != 2:
+if len(sys.argv) == 1:
 	sys.exit("Use: python build_graph.py <dataset>")
 
-datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr']
+datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr', 'baidu_95']
 # build corpus
 dataset = sys.argv[1]
+multi_label = False if not sys.argv[2] else bool(sys.argv[2])
 
 if dataset not in datasets:
 	sys.exit("wrong dataset name")
@@ -211,7 +212,8 @@ Word definitions end
 label_set = set()
 for doc_meta in shuffle_doc_name_list:
     temp = doc_meta.split('\t')
-    label_set.add(temp[2])
+    for i in range(2, len(temp)):
+        label_set.add(temp[i])
 label_list = list(label_set)
 
 label_list_str = '\n'.join(label_list)
@@ -262,10 +264,10 @@ y = []
 for i in range(real_train_size):
     doc_meta = shuffle_doc_name_list[i]
     temp = doc_meta.split('\t')
-    label = temp[2]
     one_hot = [0 for l in range(len(label_list))]
-    label_index = label_list.index(label)
-    one_hot[label_index] = 1
+    for label in temp[2:]:
+        label_index = label_list.index(label)
+        one_hot[label_index] = 1
     y.append(one_hot)
 y = np.array(y)
 print(y)
@@ -300,10 +302,10 @@ ty = []
 for i in range(test_size):
     doc_meta = shuffle_doc_name_list[i + train_size]
     temp = doc_meta.split('\t')
-    label = temp[2]
     one_hot = [0 for l in range(len(label_list))]
-    label_index = label_list.index(label)
-    one_hot[label_index] = 1
+    for label in temp[2:]:
+        label_index = label_list.index(label)
+        one_hot[label_index] = 1
     ty.append(one_hot)
 ty = np.array(ty)
 print(ty)
@@ -358,10 +360,10 @@ ally = []
 for i in range(train_size):
     doc_meta = shuffle_doc_name_list[i]
     temp = doc_meta.split('\t')
-    label = temp[2]
     one_hot = [0 for l in range(len(label_list))]
-    label_index = label_list.index(label)
-    one_hot[label_index] = 1
+    for label in temp[2:]:
+        label_index = label_list.index(label)
+        one_hot[label_index] = 1
     ally.append(one_hot)
 
 for i in range(vocab_size):
