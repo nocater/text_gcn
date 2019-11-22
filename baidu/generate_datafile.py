@@ -24,11 +24,11 @@ df['item'] = df.item.apply(lambda x: [word for word in x if word not in stopword
 # write to corpus/baidu_95.clean.txt corpus/baidu_95.txt ./baidu_95.txt
 with open(f'../data/corpus/{dataset}.txt', 'w') as f:
     for line in df.item:
-        f.write(' '.join(line))
+        f.write(' '.join(line)+'\n')
 
 with open(f'../data/corpus/{dataset}.clean.txt', 'w') as f:
     for line in df.item:
-        f.write(' '.join(line))
+        f.write(' '.join(line)+'\n')
 
 # split dataset
 # sublabel 先使用单标签分类验证模型效果
