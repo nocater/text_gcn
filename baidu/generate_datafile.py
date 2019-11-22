@@ -37,6 +37,6 @@ index_split = len(df) * 0.9
 with open(f'../data/{dataset}.txt', 'w') as f:
     for index, row in df.iterrows():
         category = 'train' if index <= index_split else 'test'
-        f.write(f'{index} {category} {row[0].split()[sublabel]}\n')
+        f.write(f'{index}\t{category}\t{row[0].split()[sublabel]}\n')
 
 print(f'Dataset{dataset} file is generated, please use build_graph')
