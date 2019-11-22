@@ -32,11 +32,16 @@ with open(f'../data/corpus/{dataset}.clean.txt', 'w') as f:
 
 # split dataset
 # sublabel 先使用单标签分类验证模型效果
-sublabel = 1
+# sublabel = 1
 index_split = len(df) * 0.9
 with open(f'../data/{dataset}.txt', 'w') as f:
     for index, row in df.iterrows():
         category = 'train' if index <= index_split else 'test'
-        f.write(f'{index}\t{category}\t{row[0].split()[sublabel]}\n')
+        # single lable
+        # f.write(f'{index}\t{category}\t{row[0].split()[sublabel]}\n')
+        # multi_label
+        lables = '\t'.join(row[0].split())
+        f.write(f"{index}\t{category}\t{lables}\n")
+
 
 print(f'Dataset{dataset} file is generated, please use build_graph')
