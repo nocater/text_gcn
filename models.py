@@ -158,10 +158,11 @@ class GCN(Model):
         self.accuracy = masked_accuracy(self.outputs, self.placeholders['labels'],
                                         self.placeholders['labels_mask'],
                                         self.multi_label)
-        if self.multi_label:
+        if not self.multi_label:
             self.pred = tf.argmax(self.outputs, 1)
         else:
             self.pred = tf.where(self.outputs >= 0.5, tf.ones(tf.shape(self.outputs)), tf.zeros(tf.shape(self.outputs)))
+            self.pred = tf.cast(self.pred, tf.int32)
         self.labels = tf.argmax(self.placeholders['labels'], 1)
 
     def _build(self):
