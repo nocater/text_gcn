@@ -18,7 +18,7 @@ if len(sys.argv) == 1:
 datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr', 'baidu_95']
 # build corpus
 dataset = sys.argv[1]
-multi_label = False if not sys.argv[2] else bool(sys.argv[2])
+multi_label = False if len(sys.argv)<3 else bool(sys.argv[2])
 
 if dataset not in datasets:
 	sys.exit("wrong dataset name")
