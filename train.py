@@ -16,14 +16,14 @@ if len(sys.argv) == 1:
 
 datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr', 'baidu_95']
 dataset = sys.argv[1]
-multi_label = False if not sys.argv[2] else bool(sys.argv[2])
+multi_label = False if len(sys.argv)<3 else bool(sys.argv[2])
 
 if dataset not in datasets:
 	sys.exit("wrong dataset name")
 
 
 # Set random seed
-seed = random.randint(1, 200)
+seed = 1 # random.randint(1, 200)
 np.random.seed(seed)
 tf.set_random_seed(seed)
 
@@ -37,9 +37,9 @@ flags.DEFINE_string('dataset', dataset, 'Dataset string.')
 # 'gcn', 'gcn_cheby', 'dense'
 flags.DEFINE_string('model', 'gcn', 'Model string.')
 flags.DEFINE_float('learning_rate', 0.02, 'Initial learning rate.')
-flags.DEFINE_integer('epochs', 1, 'Number of epochs to train.')
-flags.DEFINE_integer('hidden1', 200, 'Number of units in hidden layer 1.')
-flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
+flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
+flags.DEFINE_integer('hidden1', 512, 'Number of units in hidden layer 1.')
+flags.DEFINE_float('dropout', 0.6, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0,
                    'Weight for L2 loss on embedding matrix.')  # 5e-4
 flags.DEFINE_integer('early_stopping', 10,
