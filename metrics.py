@@ -23,7 +23,7 @@ def masked_softmax_cross_entropy(preds, labels, mask, multi_label=False):
 def masked_accuracy(preds, labels, mask, multi_label=False):
     """Accuracy with masking."""
     if multi_label:
-        predictions = tf.where(tf.nn.sigmoid(preds) > 0, tf.ones(tf.shape(preds)), tf.zeros(tf.shape(preds)))
+        predictions = tf.where(tf.nn.sigmoid(preds) > 0.5, tf.ones(tf.shape(preds)), tf.zeros(tf.shape(preds)))
         t = tf.multiply(predictions, labels)
         true_positives = tf.reduce_sum(t, axis=0)
         predicted_positives = tf.reduce_sum(predictions, axis=0)

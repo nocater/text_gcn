@@ -163,7 +163,7 @@ class GCN(Model):
             self.pred = tf.argmax(self.outputs, 1)
             self.labels = tf.argmax(self.placeholders['labels'], 1)
         else:
-            self.pred = tf.where(tf.nn.sigmoid(self.outputs) >= 0, tf.ones(tf.shape(self.outputs)), tf.zeros(tf.shape(self.outputs)))
+            self.pred = tf.where(tf.nn.sigmoid(self.outputs) >= 0.5, tf.ones(tf.shape(self.outputs)), tf.zeros(tf.shape(self.outputs)))
             self.pred = tf.cast(self.pred, tf.int32)
             self.labels = self.placeholders['labels']
 
