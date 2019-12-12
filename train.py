@@ -10,6 +10,7 @@ from models import GCN, MLP
 import random
 import os
 import sys
+from baidu.metrics import f1_np
 
 if len(sys.argv) == 1:
 	sys.exit("Use: python train.py <dataset>")
@@ -17,6 +18,10 @@ if len(sys.argv) == 1:
 datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr', 'baidu_95']
 dataset = sys.argv[1]
 multi_label = False if len(sys.argv)<3 else bool(sys.argv[2])
+
+print('*'*30)
+print('Multi Label Classify Task!' if multi_label else 'Single Label Classify Task!')
+print('*'*30)
 
 if dataset not in datasets:
 	sys.exit("wrong dataset name")
@@ -28,7 +33,7 @@ np.random.seed(seed)
 tf.set_random_seed(seed)
 
 # Settings
-os.environ["CUDA_VISIBLE_DEVICES"] = "1,2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -36,13 +41,13 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('dataset', dataset, 'Dataset string.')
 # 'gcn', 'gcn_cheby', 'dense'
 flags.DEFINE_string('model', 'gcn', 'Model string.')
-flags.DEFINE_float('learning_rate', 0.02, 'Initial learning rate.')
+flags.DEFINE_float('learning_rate', 0.03, 'Initial learning rate.')
 flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
 flags.DEFINE_integer('hidden1', 512, 'Number of units in hidden layer 1.')
-flags.DEFINE_float('dropout', 0.6, 'Dropout rate (1 - keep probability).')
+flags.DEFINE_float('dropout', 0.8, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0,
                    'Weight for L2 loss on embedding matrix.')  # 5e-4
-flags.DEFINE_integer('early_stopping', 10,
+flags.DEFINE_integer('early_stopping', 100,
                      'Tolerance for early stopping (# of epochs).')
 flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 
@@ -130,6 +135,9 @@ for epoch in range(FLAGS.epochs):
               outs[2]), "val_loss=", "{:.5f}".format(cost),
           "val_acc=", "{:.5f}".format(acc), "time=", "{:.5f}".format(time.time() - t))
 
+    micro_f1, macro_f1 = f1_np(labels, pred)
+    print('Test micro_f1, macro_f1', micro_f1, macro_f1)
+
     if epoch > FLAGS.early_stopping and cost_val[-1] > np.mean(cost_val[-(FLAGS.early_stopping+1):-1]):
         print("Early stopping...")
         break
@@ -150,55 +158,60 @@ for i in range(len(test_mask)):
         test_pred.append(pred[i])
         test_labels.append(labels[i])
 
-print("Test Precision, Recall and F1-Score...")
-print(metrics.classification_report(test_labels, test_pred, digits=4))
-print("Macro average Test Precision, Recall and F1-Score...")
-print(metrics.precision_recall_fscore_support(test_labels, test_pred, average='macro'))
-print("Micro average Test Precision, Recall and F1-Score...")
-print(metrics.precision_recall_fscore_support(test_labels, test_pred, average='micro'))
-
-# doc and word embeddings
-print('embeddings:')
-word_embeddings = outs[3][train_size: adj.shape[0] - test_size]
-train_doc_embeddings = outs[3][:train_size]  # include val docs
-test_doc_embeddings = outs[3][adj.shape[0] - test_size:]
-
-print(len(word_embeddings), len(train_doc_embeddings),
-      len(test_doc_embeddings))
-print(word_embeddings)
-
-f = open('data/corpus/' + dataset + '_vocab.txt', 'r')
-words = f.readlines()
-f.close()
-
-vocab_size = len(words)
-word_vectors = []
-for i in range(vocab_size):
-    word = words[i].strip()
-    word_vector = word_embeddings[i]
-    word_vector_str = ' '.join([str(x) for x in word_vector])
-    word_vectors.append(word + ' ' + word_vector_str)
-
-word_embeddings_str = '\n'.join(word_vectors)
-f = open('data/' + dataset + '_word_vectors.txt', 'w')
-f.write(word_embeddings_str)
-f.close()
-
-doc_vectors = []
-doc_id = 0
-for i in range(train_size):
-    doc_vector = train_doc_embeddings[i]
-    doc_vector_str = ' '.join([str(x) for x in doc_vector])
-    doc_vectors.append('doc_' + str(doc_id) + ' ' + doc_vector_str)
-    doc_id += 1
-
-for i in range(test_size):
-    doc_vector = test_doc_embeddings[i]
-    doc_vector_str = ' '.join([str(x) for x in doc_vector])
-    doc_vectors.append('doc_' + str(doc_id) + ' ' + doc_vector_str)
-    doc_id += 1
-
-doc_embeddings_str = '\n'.join(doc_vectors)
-f = open('data/' + dataset + '_doc_vectors.txt', 'w')
-f.write(doc_embeddings_str)
-f.close()
+test_labels = np.array(test_labels)
+test_pred = np.array(test_pred)
+micro_f1, macro_f1 = f1_np(test_labels, test_pred)
+print('Test micro_f1, macro_f1', micro_f1, macro_f1)
+#
+# print("Test Precision, Recall and F1-Score...")
+# print(metrics.classification_report(test_labels, test_pred, digits=4))
+# print("Macro average Test Precision, Recall and F1-Score...")
+# print(metrics.precision_recall_fscore_support(test_labels, test_pred, average='macro'))
+# print("Micro average Test Precision, Recall and F1-Score...")
+# print(metrics.precision_recall_fscore_support(test_labels, test_pred, average='micro'))
+#
+# # doc and word embeddings
+# print('embeddings:')
+# word_embeddings = outs[3][train_size: adj.shape[0] - test_size]
+# train_doc_embeddings = outs[3][:train_size]  # include val docs
+# test_doc_embeddings = outs[3][adj.shape[0] - test_size:]
+#
+# print(len(word_embeddings), len(train_doc_embeddings),
+#       len(test_doc_embeddings))
+# print(word_embeddings)
+#
+# f = open('data/corpus/' + dataset + '_vocab.txt', 'r')
+# words = f.readlines()
+# f.close()
+#
+# vocab_size = len(words)
+# word_vectors = []
+# for i in range(vocab_size):
+#     word = words[i].strip()
+#     word_vector = word_embeddings[i]
+#     word_vector_str = ' '.join([str(x) for x in word_vector])
+#     word_vectors.append(word + ' ' + word_vector_str)
+#
+# word_embeddings_str = '\n'.join(word_vectors)
+# f = open('data/' + dataset + '_word_vectors.txt', 'w')
+# f.write(word_embeddings_str)
+# f.close()
+#
+# doc_vectors = []
+# doc_id = 0
+# for i in range(train_size):
+#     doc_vector = train_doc_embeddings[i]
+#     doc_vector_str = ' '.join([str(x) for x in doc_vector])
+#     doc_vectors.append('doc_' + str(doc_id) + ' ' + doc_vector_str)
+#     doc_id += 1
+#
+# for i in range(test_size):
+#     doc_vector = test_doc_embeddings[i]
+#     doc_vector_str = ' '.join([str(x) for x in doc_vector])
+#     doc_vectors.append('doc_' + str(doc_id) + ' ' + doc_vector_str)
+#     doc_id += 1
+#
+# doc_embeddings_str = '\n'.join(doc_vectors)
+# f = open('data/' + dataset + '_doc_vectors.txt', 'w')
+# f.write(doc_embeddings_str)
+# f.close()
