@@ -38,7 +38,7 @@ def masked_accuracy(preds, labels, mask, multi_label=False):
         prec = tf.reduce_sum(true_positives) / tf.reduce_sum(predicted_positives)
         reca = tf.reduce_sum(true_positives) / tf.reduce_sum(possible_positives)
         micro_f1 = 2 * prec * reca / (prec + reca + 1e-8)
-        return macro_f1#, macro_f1
+        return micro_f1 #, macro_f1
 
     else:
         correct_prediction = tf.equal(tf.argmax(preds, 1), tf.argmax(labels, 1))
