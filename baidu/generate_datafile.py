@@ -4,6 +4,9 @@ import numpy as np
 
 """
 Generate dataset.txt datset.clean.txt
+
+/data/dataset.txt 是数据的ID train/test标识 (多)类别
+/data/corpus/dataset.txt 是数据的原始文本数据
 """
 
 dataset = 'baidu_95'
@@ -32,7 +35,7 @@ with open(f'../data/corpus/{dataset}.clean.txt', 'w') as f:
 
 # split dataset
 # sublabel 先使用单标签分类验证模型效果
-# sublabel = 1
+# sublabel = 2
 index_split = len(df) * 0.9
 with open(f'../data/{dataset}.txt', 'w') as f:
     for index, row in df.iterrows():
